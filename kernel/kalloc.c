@@ -80,3 +80,19 @@ kalloc(void)
     memset((char*)r, 5, PGSIZE); // fill with junk
   return (void*)r;
 }
+
+//计算空闲页大小，空闲页通过空闲链表管理，遍历链表即可，注意加锁
+uint64
+countFreemem()
+{
+  struct  run* r;
+  uint64 total = 0;
+  acquire(&kmem.lock);
+  r = kmem.freelist;
+  while (r) {
+    total += PGSIZE;
+    r = r->next;
+  }
+  release(&kmem.lock);
+  return total;
+}
